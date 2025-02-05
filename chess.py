@@ -443,110 +443,116 @@ def is_valid_knight_move(board, start_pos, end_pos, player):
         if board[end_row][end_col] == 0 or board[end_row][end_col][0] != player:
             return True
     return False
+
+
 moved_flags = {
     "wK": False,
-    "wR_kingside": False,   
-    "wR_queenside": False,  
+    "wR_kingside": False,
+    "wR_queenside": False,
     "bK": False,
-    "bR_kingside": False,   
-    "bR_queenside": False   
+    "bR_kingside": False,
+    "bR_queenside": False
 }
 
 
-def move_piece(board, from_pos, to_pos, piece_key):
 
-    row_from, col_from = from_pos
-    row_to, col_to = to_pos
-    board[row_to][col_to] = board[row_from][col_from]
-    board[row_from][col_from] = 0
-    moved_flags[piece_key] = True
+def move_piece(board, start_pos, end_pos):
+    """
+    Taşı hareket ettir ve ilgili bayrakları güncelle.
+    """
+    start_row, start_col = start_pos
+    end_row, end_col = end_pos
+    piece = board[start_row][start_col]
 
-def is_square_attacke(board, square, player):
-    return False
+    board[end_row][end_col] = piece
+    board[start_row][start_col] = 0
 
-def short_castle(board, player):
-   
+    # Taşın hareket edip etmediğini kontrol et ve bayrağı ayarla
+    if piece == "wK":
+        moved_flags["wK"] = True
+    elif piece == "wR" and start_row == 7 and start_col == 7:
+        moved_flags["wR_kingside"] = True
+    elif piece == "wR" and start_row == 7 and start_col == 0:
+        moved_flags["wR_queenside"] = True
+    elif piece == "bK":
+        moved_flags["bK"] = True
+    elif piece == "bR" and start_row == 0 and start_col == 7:
+        moved_flags["bR_kingside"] = True
+    elif piece == "bR" and start_row == 0 and start_col == 0:
+        moved_flags["bR_queenside"] = True
+
+def promote_pawn(board, row, col, player):
+    pieces = ['R', 'N', 'B', 'Q']  
+
+    draw_promotion_menu()
+    draw_piece_buttons(pieces, player)
+
+    selected_piece = handle_click(pieces)
+
+    board[row][col] = f"{player}{selected_piece}"
+
+    if selected_piece == 'R':
+        if player == 'w':
+            if col == 0:
+                moved_flags["wR_queenside"] = True
+            elif col == 7:
+                moved_flags["wR_kingside"] = True
+        elif player == 'b':
+            if col == 0:
+                moved_flags["bR_queenside"] = True
+            elif col == 7:
+                moved_flags["bR_kingside"] = True
+
+    return board  
+
+def can_castle(board, player, rook_col, target_cols, rook_flag):
+    """
+    Rokun geçerli olup olmadığını kontrol eder.
+    """
     row = 7 if player == 'w' else 0
-
     king_piece = f"{player}K"
-    rook_piece = f"{player}R"  
     
-    if board[row][4] != king_piece or board[row][7] != rook_piece:
+    if board[row][4] != king_piece or board[row][rook_col] != f"{player}R":
         return False
-
-    if moved_flags[f"{player}K"] or moved_flags[f"{player}R_kingside"]:
+    if moved_flags[f"{player}K"] or moved_flags[rook_flag]:
         return False
-
-    if board[row][5] != 0 or board[row][6] != 0:
+    if any(board[row][col] != 0 for col in target_cols):
         return False
-
-    if is_square_attacke(board, (row, 4), player) or \
-       is_square_attacke(board, (row, 5), player) or \
-       is_square_attacke(board, (row, 6), player):
+    if any(is_square_attacked(board, (row, col), player) for col in [4] + list(target_cols)):
         return False
-
-    board[row][4] = 0           
-    board[row][7] = 0           
-    board[row][6] = king_piece  
-    board[row][5] = rook_piece  
-
-    moved_flags[f"{player}K"] = True
-    moved_flags[f"{player}R_kingside"] = True
 
     return True
+
+def execute_castle(board, player, king_target, rook_start, rook_target):
+    """
+    Rok işlemini gerçekleştirir.
+    """
+    row = 7 if player == 'w' else 0
+    king_piece = f"{player}K"
+    rook_piece = f"{player}R"
+    
+    board[row][4] = 0  
+    board[row][rook_start] = 0  
+    board[row][king_target] = king_piece  
+    board[row][rook_target] = rook_piece  
+
+def short_castle(board, player):
+
+    if can_castle(board, player, 7, [5, 6], f"{player}R_kingside"):
+        execute_castle(board, player, 6, 7, 5)
+        moved_flags[f"{player}K"] = True
+        moved_flags[f"{player}R_kingside"] = True
+        return True
+    return False
 
 def long_castle(board, player):
 
-    row = 7 if player == 'w' else 0
-
-    king_piece = f"{player}K"
-    rook_piece = f"{player}R"  
-    if board[row][4] != king_piece or board[row][0] != rook_piece:
-        return False
-
-    if moved_flags[f"{player}K"] or moved_flags[f"{player}R_queenside"]:
-        return False
-
-    if board[row][1] != 0 or board[row][2] != 0 or board[row][3] != 0:
-        return False
-
-    if is_square_attacke(board, (row, 4), player) or \
-       is_square_attacke(board, (row, 3), player) or \
-       is_square_attacke(board, (row, 2), player):
-        return False
-
-    board[row][4] = 0           
-    board[row][0] = 0           
-    board[row][2] = king_piece  
-    board[row][3] = rook_piece  
-
-    moved_flags[f"{player}K"] = True
-    moved_flags[f"{player}R_queenside"] = True
-
-    return True
-
-
-board = [[0 for _ in range(8)] for _ in range(8)]
-
-board[7][4] = "wK"
-board[7][7] = "wR"  
-board[7][0] = "wR" 
-board[0][4] = "bK"
-board[0][7] = "bR"
-board[0][0] = "bR"
-
-move_piece(board, (7,7), (7,6), "wR_kingside")
-
-if short_castle(board, 'w'):
-    print("Beyaz kısa rok yaptı!")
-else:
-    print("Beyaz kısa rok yapılamadı (kale veya şah hareket etmiş).")
-
-if long_castle(board, 'w'):
-    print("Beyaz uzun rok yaptı!")
-else:
-    print("Beyaz uzun rok yapılamadı (kale veya şah hareket etmiş).")
-
+    if can_castle(board, player, 0, [1, 2, 3], f"{player}R_queenside"):
+        execute_castle(board, player, 2, 0, 3)
+        moved_flags[f"{player}K"] = True
+        moved_flags[f"{player}R_queenside"] = True
+        return True
+    return False
 
 
 def is_valid_king_move(board, start_pos, end_pos, player):
