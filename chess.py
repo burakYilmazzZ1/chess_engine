@@ -6,7 +6,7 @@ import time
 pygame.init()
 
 WIDTH = 1000  
-HEIGHT = 800  
+HEIGHT = 800 
 SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Satranç Oyunu')
 
@@ -14,20 +14,20 @@ ROWS = 8
 COLS = 8
 SQUARE_SIZE = 800 // COLS  
 
-#-----------------
+
 PROMOTION_MENU_HEIGHT = 120  
 PIECE_SIZE = 40  
-MENU_WIDTH = 4 * PIECE_SIZE  
-MENU_X = (WIDTH - MENU_WIDTH) // 2 
-MENU_Y = (HEIGHT - PROMOTION_MENU_HEIGHT) // 2  
+MENU_WIDTH = 4 * PIECE_SIZE 
+MENU_X = (WIDTH - MENU_WIDTH) // 2  
+MENU_Y = (HEIGHT - PROMOTION_MENU_HEIGHT) // 2 
 
 LIGHT_GRAY = (230, 230, 230)  
 WHITE = (255, 255, 255)  
-BLACK = (0, 0, 0)  
+BLACK = (0, 0, 0) 
 TRANSPARENT_GRAY = (200, 200, 200, 128)  
-#----------------
 
-
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
 BROWN = (205, 133, 63)
 TAN = (222, 184, 135)
 LIGHT_GRAY = (211, 211, 211)  
@@ -153,7 +153,7 @@ def is_stalemate(board, player):
                         if is_valid_move(board, (row, col), (r, c), player):
                             return False  
 
-    return True 
+    return True  
 
 position_history = {}
 
@@ -192,12 +192,13 @@ def is_insufficient_material(board):
     for color in ['w', 'b']:
         if pieces[color] == ['K']:
             continue  
+
         if sorted(pieces[color]) in [['K', 'B'], ['K', 'N']]:  
             continue  
 
         return False  
 
-    return True  
+    return True 
 
 
 def is_checkmate(board, player):
@@ -210,15 +211,16 @@ def is_checkmate(board, player):
                 for r in range(8):
                     for c in range(8):
                         if is_valid_move(board, (row, col), (r, c), player):
-                            return False  # Eğer herhangi bir geçerli hamle varsa mat değil
+                            return False  
     return True
 
 def is_in_check(board, player):
+
     king_pos = None
 
     for row in range(ROWS):
         for col in range(COLS):
-            if board[row][col] == f"{player}K": 
+            if board[row][col] == f"{player}K":  
                 king_pos = (row, col)
                 break
         if king_pos:
@@ -226,7 +228,6 @@ def is_in_check(board, player):
 
     if king_pos is None:
         return False 
-
     return is_square_attacked(board, king_pos, player)
 
 
@@ -271,34 +272,38 @@ def is_valid_queen_move(board, start_pos, end_pos, player):
     return False
 
 def is_square_attacked(board, square, player):
-    opponent = 'b' if player == 'w' else 'w' 
+    opponent = 'b' if player == 'w' else 'w'
+    target_row, target_col = square
 
     for row in range(ROWS):
         for col in range(COLS):
             piece = board[row][col]
             if piece != 0 and piece[0] == opponent:
+                
                 if piece[1] == 'P':
-                    
-                    direction = 1 if opponent == 'b' else -1
-                    if (row + direction, col - 1) == square or (row + direction, col + 1) == square:
-                        return True
-                elif piece[1] == 'R':
-                    if is_valid_rook_move(board, (row, col), square, opponent):
-                        return True
-                elif piece[1] == 'N':
-                    if is_valid_knight_move(board, (row, col), square, opponent):
-                        return True
-                elif piece[1] == 'B':
-                    if is_valid_bishop_move(board, (row, col), square, opponent):
-                        return True
-                elif piece[1] == 'Q':
-                    if is_valid_queen_move(board, (row, col), square, opponent):
-                        return True
-                elif piece[1] == 'K':
-                    if is_valid_king_move(board, (row, col), square, opponent):
-                        return True
+                    pawn_attack_row = row + (1 if opponent == 'b' else -1)
+                    if 0 <= pawn_attack_row < ROWS and 0 <= col - 1 < COLS:
+                        if (pawn_attack_row, col - 1) == (target_row, target_col):
+                            return True
+                    if 0 <= pawn_attack_row < ROWS and 0 <= col + 1 < COLS:
+                        if (pawn_attack_row, col + 1) == (target_row, target_col):
+                            return True
+
+                if piece[1] == 'R' and is_valid_rook_move(board, (row, col), square, opponent):
+                    return True
+                elif piece[1] == 'N' and is_valid_knight_move(board, (row, col), square, opponent):
+                    return True
+                elif piece[1] == 'B' and is_valid_bishop_move(board, (row, col), square, opponent):
+                    return True
+                elif piece[1] == 'Q' and is_valid_queen_move(board, (row, col), square, opponent):
+                    return True
+                elif piece[1] == 'K' and is_valid_king_move(board, (row, col), square, opponent, check_for_attack=True):
+                    return True
 
     return False
+
+
+
 def is_valid_pawn_move(board, start_pos, end_pos, player, en_passant_target):
     start_row, start_col = start_pos
     end_row, end_col = end_pos
@@ -308,52 +313,51 @@ def is_valid_pawn_move(board, start_pos, end_pos, player, en_passant_target):
     if start_col == end_col and board[end_row][end_col] == 0:
         if end_row - start_row == direction:
             return True
-        
         if start_row == start_row_initial and end_row - start_row == 2 * direction and board[start_row + direction][start_col] == 0:
             return True
 
     if abs(start_col - end_col) == 1 and end_row - start_row == direction:
         if board[end_row][end_col] != 0 and board[end_row][end_col][0] != player:
             return True
-        
         if (end_row, end_col) == en_passant_target:
             board[start_row][end_col] = 0
             return True
 
     return False
 
-
-PROMOTION_MENU_HEIGHT = 120  #
+PROMOTION_MENU_HEIGHT = 120  
 PIECE_SIZE = 40  
 BUTTON_SIZE = 50  
 BUTTON_SPACING = 10  
 
-
+LIGHT_GRAY = (230, 230, 230) 
+WHITE = (255, 255, 255)  
+BLACK = (0, 0, 0)  
+TRANSPARENT_GRAY = (200, 200, 200, 128)  
 
 MENU_WIDTH = BUTTON_SIZE * 4 + BUTTON_SPACING * 3  
-MENU_X = (WIDTH - MENU_WIDTH) // 2 
-MENU_Y = (HEIGHT - PROMOTION_MENU_HEIGHT) // 2 
+MENU_X = (WIDTH - MENU_WIDTH) // 2  
+MENU_Y = (HEIGHT - PROMOTION_MENU_HEIGHT) // 2  
 
 def draw_promotion_menu():
-    """Draw the promotion menu background at the center of the screen with transparency."""
+
     pygame.draw.rect(SCREEN, LIGHT_GRAY, (MENU_X, MENU_Y, MENU_WIDTH, PROMOTION_MENU_HEIGHT))
     pygame.draw.rect(SCREEN, WHITE, (MENU_X, MENU_Y, MENU_WIDTH, PROMOTION_MENU_HEIGHT), 5)  # White border
 
 def draw_piece_buttons(pieces, player):
     """Draw the piece buttons in the promotion menu at the center."""
     for i, piece in enumerate(pieces):
-        piece_image = f"{player}{piece}"  # Example: 'wR', 'wN', etc.
+        piece_image = f"{player}{piece}"  
         
-        x_pos = MENU_X + i * (BUTTON_SIZE + BUTTON_SPACING)  # Horizontal positioning
-        y_pos = MENU_Y + (PROMOTION_MENU_HEIGHT - BUTTON_SIZE) // 2  # Center buttons vertically
+        x_pos = MENU_X + i * (BUTTON_SIZE + BUTTON_SPACING)  
+        y_pos = MENU_Y + (PROMOTION_MENU_HEIGHT - BUTTON_SIZE) // 2  
 
-        pygame.draw.rect(SCREEN, TRANSPARENT_GRAY, (x_pos, y_pos, BUTTON_SIZE, BUTTON_SIZE))  # Transparent background
-        pygame.draw.rect(SCREEN, BLACK, (x_pos, y_pos, BUTTON_SIZE, BUTTON_SIZE), 2)  # Black border
+        pygame.draw.rect(SCREEN, TRANSPARENT_GRAY, (x_pos, y_pos, BUTTON_SIZE, BUTTON_SIZE))  
+        pygame.draw.rect(SCREEN, BLACK, (x_pos, y_pos, BUTTON_SIZE, BUTTON_SIZE), 2)  
         
         SCREEN.blit(load_images(IMAGE_PATH)[piece_image], (x_pos + (BUTTON_SIZE - PIECE_SIZE) // 2, y_pos + (BUTTON_SIZE - PIECE_SIZE) // 2))
 
 def handle_click(pieces):
-    """Handle user click and return the selected piece."""
     selected_piece = None
     while selected_piece is None:
         for event in pygame.event.get():
@@ -366,7 +370,6 @@ def handle_click(pieces):
                 x, y = pos[0], pos[1]
 
                 if MENU_X <= x < MENU_X + MENU_WIDTH and MENU_Y <= y < MENU_Y + PROMOTION_MENU_HEIGHT:
-                    # Determine which piece was clicked based on x-coordinate
                     index = (x - MENU_X) // (BUTTON_SIZE + BUTTON_SPACING)
                     if 0 <= index < len(pieces):
                         selected_piece = pieces[index]
@@ -376,16 +379,16 @@ def handle_click(pieces):
     return selected_piece
 
 def promote_pawn(board, row, col, player):
-    pieces = ['R', 'N', 'B', 'Q']  # Available promotion pieces
-
+    """Promotes a pawn to the selected piece (Queen, Rook, Bishop, or Knight)."""
+    pieces = ['R', 'N', 'B', 'Q'] 
     draw_promotion_menu()
     draw_piece_buttons(pieces, player)
 
     selected_piece = handle_click(pieces)
 
     board[row][col] = f"{player}{selected_piece}"
-
-    return board 
+   
+    return board  # 
 
 def is_valid_rook_move(board, start_pos, end_pos, player):
     start_row, start_col = start_pos
@@ -401,7 +404,6 @@ def is_valid_rook_move(board, start_pos, end_pos, player):
                 return False
         return True
 
-    # Yatay hareket
     if start_row == end_row:
         step = 1 if end_col > start_col else -1
         for col in range(start_col + step, end_col, step):
@@ -425,7 +427,7 @@ def is_valid_bishop_move(board, start_pos, end_pos, player):
 
         while current_row != end_row and current_col != end_col:
             if board[current_row][current_col] != 0:
-                return False  # Hareket yolu üzerinde başka bir taş varsa geçersiz
+                return False  
             current_row += row_step
             current_col += col_step
 
@@ -440,10 +442,10 @@ def is_valid_knight_move(board, start_pos, end_pos, player):
 
     if (abs(start_row - end_row) == 2 and abs(start_col - end_col) == 1) or \
        (abs(start_row - end_row) == 1 and abs(start_col - end_col) == 2):
+        # Hedef karede kendi taşımız yoksa geçerli
         if board[end_row][end_col] == 0 or board[end_row][end_col][0] != player:
             return True
     return False
-
 
 moved_flags = {
     "wK": False,
@@ -454,7 +456,18 @@ moved_flags = {
     "bR_queenside": False
 }
 
-
+def create_board():
+    board = [
+        ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
+        ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
+        ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']
+    ]
+    return board
 
 def move_piece(board, start_pos, end_pos):
     """
@@ -467,7 +480,6 @@ def move_piece(board, start_pos, end_pos):
     board[end_row][end_col] = piece
     board[start_row][start_col] = 0
 
-    # Taşın hareket edip etmediğini kontrol et ve bayrağı ayarla
     if piece == "wK":
         moved_flags["wK"] = True
     elif piece == "wR" and start_row == 7 and start_col == 7:
@@ -482,6 +494,7 @@ def move_piece(board, start_pos, end_pos):
         moved_flags["bR_queenside"] = True
 
 def promote_pawn(board, row, col, player):
+    """Promotes a pawn to the selected piece (Queen, Rook, Bishop, or Knight)."""
     pieces = ['R', 'N', 'B', 'Q']  
 
     draw_promotion_menu()
@@ -506,9 +519,7 @@ def promote_pawn(board, row, col, player):
     return board  
 
 def can_castle(board, player, rook_col, target_cols, rook_flag):
-    """
-    Rokun geçerli olup olmadığını kontrol eder.
-    """
+
     row = 7 if player == 'w' else 0
     king_piece = f"{player}K"
     
@@ -554,32 +565,37 @@ def long_castle(board, player):
         return True
     return False
 
-
-def is_valid_king_move(board, start_pos, end_pos, player):
+def is_valid_king_move(board, start_pos, end_pos, player, check_for_attack=False):
     start_row, start_col = start_pos
     end_row, end_col = end_pos
 
     if board[end_row][end_col] != 0 and board[end_row][end_col][0] == player:
         return False
 
-    if start_row == end_row and start_col == 4:
-        if end_col == 6:
-            return short_castle(board, player)
-        elif end_col == 2:
-            return long_castle(board, player)
+    if not check_for_attack:
+        if start_row == end_row and start_col == 4:
+            
+            if end_col == 6:
+                return short_castle(board, player)
+            
+            elif end_col == 2:
+                return long_castle(board, player)
 
     if abs(start_row - end_row) <= 1 and abs(start_col - end_col) <= 1:
-        if is_square_attacked(board, (end_row, end_col), player):
-            return False
+        
+        if not check_for_attack:
+            if is_square_attacked(board, (end_row, end_col), player):
+                return False
         return True
 
     return False
 
 
+
 def draw_message(screen, message, position, color=(0, 0, 0), duration=1.5):
     """Helper function to draw any message and remove it after a duration, unless the message is "CHECK"."""
-    font = pygame.font.Font(None, 40) 
-    text = font.render(message, True, color) 
+    font = pygame.font.Font(None, 40)  
+    text = font.render(message, True, color)  
     text_rect = text.get_rect(midright=position)  
     
     screen.blit(text, text_rect)
@@ -593,11 +609,11 @@ def draw_message(screen, message, position, color=(0, 0, 0), duration=1.5):
         pygame.event.pump()  
         pygame.display.flip()  
     
-    pygame.draw.rect(screen, (255, 255, 255), text_rect) 
-    pygame.display.flip() 
+    pygame.draw.rect(screen, (255, 255, 255), text_rect)  
+    pygame.display.flip()  
 
 def game_loop(screen, images):
-    global half_move_clock, position_history 
+    global half_move_clock, position_history  
     clock = pygame.time.Clock()
     board = create_board()
     running = True
@@ -610,7 +626,7 @@ def game_loop(screen, images):
     draw_message_color = (255, 0, 0)
 
     position_history = {}  
-    half_move_clock = 0 
+    half_move_clock = 0  
 
     while running:
         for event in pygame.event.get():
@@ -648,10 +664,12 @@ def game_loop(screen, images):
                             else:
                                 en_passant_target = None
                             
+                            
                             if board[row][col][1] == 'P' or board[row][col] != 0:
                                 reset_half_move_clock()
                             else:
                                 increment_half_move_clock()
+                            
                             
                             update_position_history(board)
 
