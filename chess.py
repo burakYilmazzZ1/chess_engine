@@ -330,11 +330,6 @@ PIECE_SIZE = 40
 BUTTON_SIZE = 50  
 BUTTON_SPACING = 10  
 
-LIGHT_GRAY = (230, 230, 230) 
-WHITE = (255, 255, 255)  
-BLACK = (0, 0, 0)  
-TRANSPARENT_GRAY = (200, 200, 200, 128)  
-
 MENU_WIDTH = BUTTON_SIZE * 4 + BUTTON_SPACING * 3  
 MENU_X = (WIDTH - MENU_WIDTH) // 2  
 MENU_Y = (HEIGHT - PROMOTION_MENU_HEIGHT) // 2  
@@ -447,14 +442,7 @@ def is_valid_knight_move(board, start_pos, end_pos, player):
             return True
     return False
 
-moved_flags = {
-    "wK": False,
-    "wR_kingside": False,
-    "wR_queenside": False,
-    "bK": False,
-    "bR_kingside": False,
-    "bR_queenside": False
-}
+
 
 def create_board():
     board = [
@@ -518,8 +506,17 @@ def promote_pawn(board, row, col, player):
 
     return board  
 
-def can_castle(board, player, rook_col, target_cols, rook_flag):
+# moved_flags değişkeni global olarak tanımlanmalı
+moved_flags = {
+    "wK": False,
+    "bK": False,
+    "wR_kingside": False,
+    "wR_queenside": False,
+    "bR_kingside": False,
+    "bR_queenside": False
+}
 
+def can_castle(board, player, rook_col, target_cols, rook_flag):
     row = 7 if player == 'w' else 0
     king_piece = f"{player}K"
     
@@ -547,21 +544,22 @@ def execute_castle(board, player, king_target, rook_start, rook_target):
     board[row][king_target] = king_piece  
     board[row][rook_target] = rook_piece  
 
-def short_castle(board, player):
+    # moved_flags güncellemesi
+    moved_flags[f"{player}K"] = True
+    if rook_start == 7:
+        moved_flags[f"{player}R_kingside"] = True
+    elif rook_start == 0:
+        moved_flags[f"{player}R_queenside"] = True
 
+def short_castle(board, player):
     if can_castle(board, player, 7, [5, 6], f"{player}R_kingside"):
         execute_castle(board, player, 6, 7, 5)
-        moved_flags[f"{player}K"] = True
-        moved_flags[f"{player}R_kingside"] = True
         return True
     return False
 
 def long_castle(board, player):
-
-    if can_castle(board, player, 0, [1, 2, 3], f"{player}R_queenside"):
+    if can_castle(board, player, 0, [1, 2], f"{player}R_queenside"):
         execute_castle(board, player, 2, 0, 3)
-        moved_flags[f"{player}K"] = True
-        moved_flags[f"{player}R_queenside"] = True
         return True
     return False
 
