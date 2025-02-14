@@ -374,7 +374,6 @@ def handle_click(pieces):
     return selected_piece
 
 def promote_pawn(board, row, col, player):
-    """Promotes a pawn to the selected piece (Queen, Rook, Bishop, or Knight)."""
     pieces = ['R', 'N', 'B', 'Q'] 
     draw_promotion_menu()
     draw_piece_buttons(pieces, player)
@@ -383,7 +382,7 @@ def promote_pawn(board, row, col, player):
 
     board[row][col] = f"{player}{selected_piece}"
    
-    return board  # 
+    return board  
 
 def is_valid_rook_move(board, start_pos, end_pos, player):
     start_row, start_col = start_pos
@@ -437,7 +436,6 @@ def is_valid_knight_move(board, start_pos, end_pos, player):
 
     if (abs(start_row - end_row) == 2 and abs(start_col - end_col) == 1) or \
        (abs(start_row - end_row) == 1 and abs(start_col - end_col) == 2):
-        # Hedef karede kendi taşımız yoksa geçerli
         if board[end_row][end_col] == 0 or board[end_row][end_col][0] != player:
             return True
     return False
@@ -458,9 +456,7 @@ def create_board():
     return board
 
 def move_piece(board, start_pos, end_pos):
-    """
-    Taşı hareket ettir ve ilgili bayrakları güncelle.
-    """
+
     start_row, start_col = start_pos
     end_row, end_col = end_pos
     piece = board[start_row][start_col]
@@ -482,7 +478,6 @@ def move_piece(board, start_pos, end_pos):
         moved_flags["bR_queenside"] = True
 
 def promote_pawn(board, row, col, player):
-    """Promotes a pawn to the selected piece (Queen, Rook, Bishop, or Knight)."""
     pieces = ['R', 'N', 'B', 'Q']  
 
     draw_promotion_menu()
@@ -506,7 +501,6 @@ def promote_pawn(board, row, col, player):
 
     return board  
 
-# moved_flags değişkeni global olarak tanımlanmalı
 moved_flags = {
     "wK": False,
     "bK": False,
@@ -532,9 +526,7 @@ def can_castle(board, player, rook_col, target_cols, rook_flag):
     return True
 
 def execute_castle(board, player, king_target, rook_start, rook_target):
-    """
-    Rok işlemini gerçekleştirir.
-    """
+
     row = 7 if player == 'w' else 0
     king_piece = f"{player}K"
     rook_piece = f"{player}R"
@@ -544,7 +536,6 @@ def execute_castle(board, player, king_target, rook_start, rook_target):
     board[row][king_target] = king_piece  
     board[row][rook_target] = rook_piece  
 
-    # moved_flags güncellemesi
     moved_flags[f"{player}K"] = True
     if rook_start == 7:
         moved_flags[f"{player}R_kingside"] = True
@@ -591,7 +582,6 @@ def is_valid_king_move(board, start_pos, end_pos, player, check_for_attack=False
 
 
 def draw_message(screen, message, position, color=(0, 0, 0), duration=1.5):
-    """Helper function to draw any message and remove it after a duration, unless the message is "CHECK"."""
     font = pygame.font.Font(None, 40)  
     text = font.render(message, True, color)  
     text_rect = text.get_rect(midright=position)  
